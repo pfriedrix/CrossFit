@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <PackageId>CrossFitLab4</PackageId>
+        <Title>CrossFitLab4</Title>
+        <Authors>Pfriedrix</Authors>
+        <Version>1.0.3</Version>
+        <PackageReleaseNotes>Dyakuu</PackageReleaseNotes>
+        <PackAsTool>true</PackAsTool> 
+        <ToolCommandName>lab4tool</ToolCommandName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\labs\labs.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+    <DotnetToolReference Include="lab4tool" Version="1.0.0" /> 
+  </ItemGroup>
+
+
+</Project>

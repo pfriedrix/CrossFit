@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>CROSSFIT</id>
+        <version>4.0.0</version>
+        <authors>Ivan Romancev</authors>
+        <owners>Ivan Romancev</owners>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>NONE</description>
+        <releaseNotes>Release</releaseNotes>
+    </metadata>
+    <files>
+        <file src="bin\Release\net7.0\**" target="lib\net7.0" />
+    </files>
+</package>
