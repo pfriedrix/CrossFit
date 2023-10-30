@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
 
       # Додаємо NuGet джерело і встановлюємо .NET tool
       su - vagrant -c "wget -qO- https://aka.ms/install-artifacts-credprovider.sh | bash"
-      su - vagrant -c "dotnet nuget add source https://pkgs.dev.azure.com/Pfriedrix/_packaging/Pfriedrix/nuget/v3/index.json --name Pfriedrix --username Ivan --password xljvksguvhqznasy6oiwlb6re4e4v7fx7hdizlfdmmsia5afvydq --store-password-in-clear-text"
+      su - vagrant -c "dotnet nuget add source https://pkgs.dev.azure.com/Pfriedrix/_packaging/Pfriedrix/nuget/v3/index.json --name Pfriedrix --username Ivan --password cros2hsu4wljdpt3gezb6dwx44nwgefsvum27222bifzqhotnt5q --store-password-in-clear-text"
       su - vagrant -c "dotnet tool install --global CrossFitLab4"
 
       # Очищуємо кеш

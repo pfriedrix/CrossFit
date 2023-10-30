@@ -13,8 +13,8 @@ public class lab3
 
     public static void RunLab(string inputPath, string outputPath)
     {
-        string inputPathFile = Path.Combine(inputPath, "input.txt");
-        string outputPathFile = Path.Combine(outputPath, "output.txt");
+        string inputPathFile = Path.Combine(inputPath, "input3.txt");
+        string outputPathFile = Path.Combine(outputPath, "output3.txt");
         var input = File.ReadAllLines(inputPathFile);
         var nm = input[0].Split().Select(int.Parse).ToArray();
         int n = nm[0], m = nm[1];

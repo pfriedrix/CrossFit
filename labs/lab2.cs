@@ -4,8 +4,8 @@ public class lab2
 {
     public static void RunLab(string inputPath, string outputPath)
     {
-        string inputPathFile = Path.Combine(inputPath, "input.txt");
-        string outputPathFile = Path.Combine(outputPath, "output.txt");
+        string inputPathFile = Path.Combine(inputPath, "input2.txt");
+        string outputPathFile = Path.Combine(outputPath, "output2.txt");
         string[] inputLines = File.ReadAllLines(inputPathFile);
         string[] parameters = inputLines[0].Split();
         int N = int.Parse(parameters[0]);

@@ -1,184 +1,298 @@
-using System.Text.RegularExpressions;
-
-namespace labs;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 public class lab1
 {
-    const char EMPTY = '.';
-    const char ENEMY = 't';
-    const char ISLAND = 'O';
-    const char PLAYER = '+';
-    private static readonly int[] DX = { -1, -1, -1, 0, 1, 1, 1, 0 };
-    private static readonly int[] DY = { -1, 0, 1, 1, 1, 0, -1, -1 };
-    
+    static char[,] sea;
+    static (int x, int y) playerPos;
+    static List<(int x, int y)> enemyShips;
+    static List<(int x, int y)> islands;
+    static (int x, int y) playerDirection;
+    static int n;
+    static List<(int x, int y)> moves;
+
     public static void RunLab(string inputFile, string outputFile)
     {
-        string[] lines = File.ReadAllLines("INPUT.TXT");
-        int n = int.Parse(lines[0]);
-        char[,] field = new char[2 * n + 1, 2 * n + 1];
-        (int x, int y) playerPos = (n, n);
-        List<(int x, int y)> enemies = new List<(int x, int y)>();
+        ReadInput(inputFile);
+        moves = new List<(int x, int y)>();
+        string outputPathFile = Path.Combine(outputFile, "output1.txt");
+        DisplaySea();
+        moves.Add((playerPos.x, playerPos.y));
+        while (enemyShips.Count > 0)
+        {
+            // count moves 
+            Console.WriteLine("moves count: " + moves.Count);
+            // Try to shoot
+            if (TryShoot())
+            {
+                moves.Add((playerPos.x, playerPos.y));
+                continue;
+            }
+            Console.WriteLine("enemy ships count: " + enemyShips.Count);
 
-        for (int i = 1; i <= 2 * n; i++)
+            // Try to move
+            if (!TryMove())
+            {
+                if (IsPlayerShipDestroyed())
+                {
+                    File.WriteAllText(outputPathFile, "IMPOSSIBLE");
+                    return;
+                }
+            }
+        }
+        
+        File.WriteAllLines(outputPathFile, new string[] { moves.Count.ToString() }
+            .Concat(moves.Select(m => $"{m.x} {m.y}")));
+    }
+
+    static bool TryShoot()
+    {
+        Console.WriteLine("try shoot");
+        var nearbyEnemyShips = enemyShips.Where(enemyShip =>
+        {
+            int dx = Math.Abs(enemyShip.x - playerPos.x);
+            int dy = Math.Abs(enemyShip.y - playerPos.y);
+            return dx <= 3 && dy <= 3;
+        }).ToList();
+
+        if (nearbyEnemyShips.Count == 0)
+        {
+            return false;
+        }
+        Console.WriteLine("nearby enemy ships count: " + nearbyEnemyShips.Count);
+        var nearestEnemyShip = nearbyEnemyShips.OrderBy(enemyShip =>
+        {
+            int dx = Math.Abs(enemyShip.x - playerPos.x);
+            int dy = Math.Abs(enemyShip.y - playerPos.y);
+            return dx + dy;
+        }).First();
+        
+        int x = nearestEnemyShip.x;
+        int y = nearestEnemyShip.y;
+        int dx = x - playerPos.x;
+        int dy = y - playerPos.y;
+        Shoot(x, y, dx, dy);
+        Shoot(x, y, -dx, -dy);
+    
+        MoveEnemyShips();
+        if (IsPlayerShipDestroyed()) return false;
+        DisplaySea();
+        return !AreAllEnemyShipsDestroyed();
+    }
+
+    static void DisplaySea()
+    {
+        for (int i = 0; i < 2 * n + 1; i++)
         {
             for (int j = 0; j < 2 * n + 1; j++)
             {
-                field[i - 1, j] = lines[i][j];
-                if (field[i - 1, j] == ENEMY) enemies.Add((i - 1, j));
+                Console.Write(sea[i, j]);
             }
+            Console.WriteLine();
         }
+    }
 
-        List<(int x, int y)> moves = new List<(int x, int y)>();
-
-        while (enemies.Count > 0)
+    static void Shoot(int x, int y, int dx, int dy)
+    {
+        Console.WriteLine("shoot");
+        while (Math.Abs(x - playerPos.x) <= 3 && Math.Abs(y - playerPos.y) <= 3 && IsInsideBoard(x, y))
         {
-            var shotResult = TryShoot(field, playerPos, enemies);
-            if (shotResult.Item1)
+            Console.WriteLine("position: " + x + " " + y);
+            if (sea[x, y] == 'O')
             {
-                moves.Add((playerPos.x + 1, playerPos.y + 1));
-                enemies = shotResult.Item2;
-                continue;
+                return;
+            }
+            if (sea[x, y] == 't')
+            {
+                enemyShips.Remove((x, y));
+                sea[x, y] = '.';
+                return;
+            }
+            x += dx;
+            y += dy;
+        }
+    }
+
+    static bool TryMove()
+    {
+        
+        Console.WriteLine("try move");
+        
+        if (AreAllEnemyShipsDestroyed())
+        {
+            return false; 
+        }
+        if (IsPlayerShipDestroyed())
+        {
+            return false;
+        }
+        // try to move to the nearest enemy ship
+        var nearestEnemyShip = enemyShips.OrderBy(enemyShip =>
+        {
+            int dx = Math.Abs(enemyShip.x - playerPos.x);
+            int dy = Math.Abs(enemyShip.y - playerPos.y);
+            return dx + dy;
+        }).First();
+        
+        int x = nearestEnemyShip.x;
+        int y = nearestEnemyShip.y;
+        int dx = x - playerPos.x;
+        int dy = y - playerPos.y;
+        
+        if (Math.Abs(dx) > 1)
+        {
+            dx = dx / Math.Abs(dx);
+        }
+        if (Math.Abs(dy) > 1)
+        {
+            dy = dy / Math.Abs(dy);
+        }
+        
+        if (IsInsideBoard(playerPos.x + dx, playerPos.y + dy) && IsCellFree(playerPos.x + dx, playerPos.y + dy))
+        {
+            MovePlayerShip(dx, dy);
+        }
+        
+        MoveEnemyShips();
+        
+        if (IsPlayerShipDestroyed())
+        {
+            return false;
+        }
+        
+        if (AreAllEnemyShipsDestroyed())
+        {
+            return false; 
+        }
+        
+        DisplaySea();
+
+        return true; 
+    }
+    
+    static bool AreAllEnemyShipsDestroyed()
+    {
+        return enemyShips.Count == 0;
+    }
+
+    static bool IsCellFree(int x, int y)
+    {
+        return sea[x, y] == '.';
+    }
+
+    static bool IsInsideBoard(int x, int y)
+    {
+        return x >= 0 && x < 2 * n + 1 && y >= 0 && y < 2 * n + 1;
+    }
+
+    static void MoveEnemyShips()
+    {
+        List<(int x, int y)> newEnemyShips = new List<(int x, int y)>();
+
+        foreach (var enemyShip in enemyShips)
+        {
+            int x = enemyShip.x;
+            int y = enemyShip.y;
+
+            int minDistance = int.MaxValue;
+            (int, int) nextPosition = (x, y);
+
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                for (int dy = -1; dy <= 1; dy++)
+                {
+                    if (dx == 0 && dy == 0) continue;
+                    int newX = x + dx;
+                    int newY = y + dy;
+
+                    int distance = Math.Abs(newX - playerPos.x) + Math.Abs(newY - playerPos.y);
+
+                    if (IsInsideBoard(newX, newY) && distance < minDistance)
+                    {
+                        minDistance = distance;
+                        nextPosition = (newX, newY);
+                    }
+                }
             }
 
-            var moveResult = TryMove(field, playerPos, enemies);
-            if (moveResult.success)
+            bool isIsland = islands.Contains(nextPosition);
+            bool isAnotherEnemyShip = newEnemyShips.Contains(nextPosition);
+            bool isPlayerShip = playerPos == nextPosition;
+           
+            if (isPlayerShip)
             {
-                moves.Add((moveResult.playerPos.x + 1, moveResult.playerPos.y + 1));
-                playerPos = moveResult.playerPos;
-                enemies = moveResult.enemies;
-            }
-            else
-            {
-                File.WriteAllText("OUTPUT.TXT", "IMPOSSIBLE");
+                newEnemyShips.Add(nextPosition);
+                enemyShips = newEnemyShips;
+                Console.WriteLine("player ship destroyed");
                 return;
             }
 
-            // Перевірка на наявність живих ворогів
-            if (enemies.Count == 0)
+            if (!isIsland && !isAnotherEnemyShip)
             {
-                break;
-            }
-
-            // Перевірка на нерозв'язану ситуацію
-            bool allEnemiesStuck = true;
-            foreach (var enemy in enemies)
-            {
-                var enemyMoveResult = TryMove(field, enemy, new List<(int x, int y)>(enemies));
-                if (enemyMoveResult.success)
-                {
-                    allEnemiesStuck = false;
-                    break;
-                }
-            }
-
-            if (allEnemiesStuck)
-            {
-                File.WriteAllText("OUTPUT.TXT", "IMPOSSIBLE");
-                return;
+                newEnemyShips.Add(nextPosition);
             }
         }
-
-        List<string> outputLines = new List<string>();
-        outputLines.Add(moves.Count.ToString());
-        foreach (var move in moves)
+        // set new enemy ships positions on the sea 
+        foreach (var enemyShip in enemyShips)
         {
-            outputLines.Add($"{move.x} {move.y}");
+            sea[enemyShip.x, enemyShip.y] = '.';
         }
-
-        File.WriteAllLines("OUTPUT.TXT", outputLines);
+        foreach (var enemyShip in newEnemyShips)
+        {
+            sea[enemyShip.x, enemyShip.y] = 't';
+        }
+        enemyShips = newEnemyShips;
+    }
+    
+    static void MovePlayerShip(int newX, int newY)
+    {
+        Console.WriteLine("move player ship to " + playerPos.x + newX + " " + playerPos.y + newY);
+        sea[playerPos.x, playerPos.y] = '.';
+        playerPos = (playerPos.x + newX, playerPos.y + newY);
+        sea[playerPos.x, playerPos.y] = '+';
+        moves.Add((playerPos.x, playerPos.y));
     }
 
-    static ((int x, int y) playerPos, List<(int x, int y)> enemies, bool success) TryMove(char[,] field, (int x, int y) playerPos, List<(int x, int y)> enemies)
+    static bool IsPlayerShipDestroyed()
     {
-        int n = (field.GetLength(0) - 1) / 2;
-        var newPlayerPos = (playerPos.x, playerPos.y);
-        var newEnemies = new List<(int x, int y)>(enemies);
-        int minDist = int.MaxValue;
-
-        for (int d = 0; d < 8; d++)
+        Console.WriteLine("is player ship destroyed");
+        if (enemyShips.Contains(playerPos))
         {
-            int nx = playerPos.x + DX[d];
-            int ny = playerPos.y + DY[d];
-            if (nx >= 0 && nx < 2 * n + 1 && ny >= 0 && ny < 2 * n + 1 && field[nx, ny] == EMPTY)
-            {
-                int dist = 0;
-                foreach (var enemy in enemies)
-                {
-                    dist += Math.Abs(nx - enemy.x) + Math.Abs(ny - enemy.y);
-                }
-                if (dist < minDist)
-                {
-                    minDist = dist;
-                    newPlayerPos = (nx, ny);
-                }
-            }
+            return true; 
         }
-
-        for (int i = 0; i < newEnemies.Count; i++)
-        {
-            var enemy = newEnemies[i];
-            int maxDist = 0;
-            var bestPos = enemy;
-
-            for (int d = 0; d < 8; d++)
-            {
-                int nx = enemy.x + DX[d];
-                int ny = enemy.y + DY[d];
-                if (nx >= 0 && nx < 2 * n + 1 && ny >= 0 && ny < 2 * n + 1 && field[nx, ny] != ISLAND)
-                {
-                    int dist = Math.Abs(newPlayerPos.x - nx) + Math.Abs(newPlayerPos.y - ny);
-                    if (dist > maxDist)
-                    {
-                        maxDist = dist;
-                        bestPos = (nx, ny);
-                    }
-                }
-            }
-
-            newEnemies[i] = bestPos;
-            if (bestPos == newPlayerPos)
-            {
-                return (newPlayerPos, newEnemies, false);
-            }
-        }
-
-        return (newPlayerPos, newEnemies, true);
+        return false; 
     }
 
-    static (bool, List<(int x, int y)>) TryShoot(char[,] field, (int x, int y) playerPos, List<(int x, int y)> enemies)
+    static void ReadInput(string inputPath)
     {
-        int n = (field.GetLength(0) - 1) / 2;
-        var newEnemies = new List<(int x, int y)>(enemies);
+        string inputPathFile = Path.Combine(inputPath, "input1.txt");
+        string[] lines = File.ReadAllLines(inputPathFile);
+        n = int.Parse(lines[0]);
+        sea = new char[2 * n + 1, 2 * n + 1];
+        enemyShips = new List<(int x, int y)>();
+        islands = new List<(int x, int y)>();
 
-        for (int d = 0; d < 8; d += 2)
+        for (int i = 0; i < 2 * n + 1; i++)
         {
-            for (int dist = 1; dist <= 3; dist++)
+            for (int j = 0; j < 2 * n + 1; j++)
             {
-                int nx = playerPos.x + DX[d] * dist;
-                int ny = playerPos.y + DY[d] * dist;
-                if (nx >= 0 && nx < 2 * n + 1 && ny >= 0 && ny < 2 * n + 1)
+                sea[i, j] = lines[i + 1][j];
+                switch (sea[i, j])
                 {
-                    if (field[nx, ny] == ENEMY)
-                    {
-                        newEnemies.Remove((nx, ny));
-                        field[nx, ny] = EMPTY;
+                    case '+':
+                        playerPos = (i, j);
+                        playerDirection = (i - 1, j);
                         break;
-                    }
-                    else if (field[nx, ny] == ISLAND)
-                    {
+                    case 't':
+                        enemyShips.Add((i, j));
                         break;
-                    }
+                    case 'O':
+                        islands.Add((i, j));
+                        break;
                 }
             }
-        }
-
-        if (enemies.Count == newEnemies.Count)
-        {
-            return (false, newEnemies);
-        }
-        else
-        {
-            return (true, newEnemies);
         }
     }
 }

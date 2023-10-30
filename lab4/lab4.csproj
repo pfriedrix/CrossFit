@@ -9,7 +9,7 @@
         <PackageId>CrossFitLab4</PackageId>
         <Title>CrossFitLab4</Title>
         <Authors>Pfriedrix</Authors>
-        <Version>1.0.3</Version>
+        <Version>1.0.4</Version>
         <PackageReleaseNotes>Dyakuu</PackageReleaseNotes>
         <PackAsTool>true</PackAsTool> 
         <ToolCommandName>lab4tool</ToolCommandName>
