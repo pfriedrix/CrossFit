@@ -1,0 +1,25 @@
+﻿@model InputOutputModel
+@{
+    ViewData["Title"] = "First Lab";
+}
+
+<div class="text-center">
+    <h1 class="display-4">First Lab</h1>
+    <p>Lab do something related to the first lab description.</p>
+
+    <form asp-controller="Lab" asp-action="First" method="get">
+        <h2>Add an input value and press process button.</h2>
+        <hr />
+        <div class="form-floating mb-3">
+            <input asp-for="InputValue" class="form-control" aria-required="true" placeholder=""/>
+            <label class="form-label">Input value</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input value="@Model.OutputValue" class="form-control" aria-required="true" placeholder="" readonly/>
+            <label class="form-label">Output value</label>
+        </div>
+        <div>
+            <button id="process" type="submit" class="w-100 btn btn-lg btn-primary">Process</button>
+        </div>
+    </form>
+</div>
