@@ -1,11 +1,11 @@
 ﻿using System.Diagnostics;
+using App.Models;
 using Common;
 using Common.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MvcApp.Models;
 
-namespace MvcApp.Controllers;
+namespace App.Controllers;
 
 [Authorize]
 public class LabController : Controller

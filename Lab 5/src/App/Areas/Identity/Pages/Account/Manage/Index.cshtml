@@ -5,7 +5,47 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<h3>@ViewData["Title"]</h3>
+ <style>
+        body {
+            font-family: 'Arial', sans-serif; /* Changing font for a fresh look */
+            background-color: #f0f8ff; /* Light sky blue background */
+        }
+        h1 {
+            text-align: center;
+            color: #333333; /* Dark grey color for heading */
+        }
+        .row {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+        .col-md-4 {
+            background-color: #ffffff; /* White background for the form */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+        .form-control {
+            border: 2px solid #007bff; /* Blue border for input fields */
+            border-radius: 4px;
+            margin-bottom: 15px; /* Increased margin */
+        }
+        .btn-primary {
+            background-color: #4CAF50; /* Green background for button */
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+        }
+        a {
+            color: #007bff; /* Blue color for links */
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        /* Additional styles for other elements */
+    </style>
+
 <partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">

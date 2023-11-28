@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
+using App.Models;
 using Microsoft.AspNetCore.Mvc;
-using MvcApp.Models;
 
-namespace MvcApp.Controllers;
+namespace App.Controllers;
 
 public class HomeController : Controller
 {
@@ -17,12 +17,7 @@ public class HomeController : Controller
     {
         return View();
     }
-
-    public IActionResult Privacy()
-    {
-        return View();
-    }
-
+    
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {

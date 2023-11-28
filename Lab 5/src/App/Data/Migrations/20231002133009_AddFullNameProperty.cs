@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace MvcApp.Data.Migrations
+namespace App.Data.Migrations
 {
     /// <inheritdoc />
     public partial class AddFullNameProperty : Migration

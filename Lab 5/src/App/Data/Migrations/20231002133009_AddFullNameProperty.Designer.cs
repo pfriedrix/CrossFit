@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MvcApp.Data;
+using App.Data;
 
 #nullable disable
 
-namespace MvcApp.Data.Migrations
+namespace App.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     [Migration("20231002133009_AddFullNameProperty")]

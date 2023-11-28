@@ -1,4 +1,4 @@
-namespace MvcApp.Models;
+namespace App.Models;
 
 public class InputOutputModel
 {
